@@ -1,16 +1,20 @@
 ﻿using System;
+using System.Threading.Tasks;
+using CosmosDbExperiments.Models;
+using CosmosDbExperiments.Tools;
 using Microsoft.Extensions.Configuration;
 
 namespace CosmosDbExperiments
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             Console.WriteLine("Hello World!");
             
-            CosmosExperiments CosmosExperiments = new CosmosExperiments(GetConfiguration());  
-            //MovieParser.ParseMovies();
+            CosmosExperiments CosmosExperiments = new CosmosExperiments(GetConfiguration());
+
+            await CosmosExperiments.InitializeDatabasesWithDataAsync();
         }
 
         static Config.Config GetConfiguration()

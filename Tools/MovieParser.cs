@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.IO;
 using System.Reflection;
 using CosmosDbExperiments.Models;
@@ -8,10 +9,9 @@ namespace CosmosDbExperiments.Tools
 {
     public static class MovieParser
     {
-        public static void ParseMovies()
+        public static IEnumerable ParseMovies(int noOfRecordsToRead)
         {
             var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            Console.WriteLine(path);
             JsonSerializer serializer = new JsonSerializer();
             int count = 0;
             Movie movie; 
@@ -19,13 +19,13 @@ namespace CosmosDbExperiments.Tools
             using (StreamReader sr = new StreamReader(fs))
             using (JsonTextReader reader = new JsonTextReader(sr))
             {
-                while (reader.Read())
+                while (reader.Read() && count < noOfRecordsToRead)
                 {
                     if (reader.TokenType == JsonToken.StartObject)
                     {
                         movie = serializer.Deserialize<Movie>(reader);
-                        Console.WriteLine(movie.Info?.Plot);
                         count++;
+                        yield return movie;
                     }
                 }
             }
