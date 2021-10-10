@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using CosmosDbExperiments.Models;
-using CosmosDbExperiments.Tools;
 using Microsoft.Extensions.Configuration;
 
 namespace CosmosDbExperiments
@@ -15,6 +13,8 @@ namespace CosmosDbExperiments
             CosmosExperiments CosmosExperiments = new CosmosExperiments(GetConfiguration());
 
             await CosmosExperiments.InitializeDatabasesWithDataAsync();
+
+            Console.ReadLine();
         }
 
         static Config.Config GetConfiguration()

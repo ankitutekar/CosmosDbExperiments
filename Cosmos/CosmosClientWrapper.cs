@@ -39,14 +39,17 @@ namespace CosmosDbExperiments.Cosmos
             this.Database = await this.Client.CreateDatabaseIfNotExistsAsync(this.DatabaseId);
         }
 
-        public async Task InitializeContainerAsync()
+        public async Task InitializeContainerAsync(bool shouldDeleteExisting)
         {
-            try
+            if(shouldDeleteExisting)
             {
-                var currentContainer = this.Database.GetContainer(this.ContainerId);
-                await currentContainer.DeleteContainerAsync();
+                try
+                {
+                    var currentContainer = this.Database.GetContainer(this.ContainerId);
+                    await currentContainer.DeleteContainerAsync();
+                }
+                catch (CosmosException) { }
             }
-            catch(CosmosException) { }
 
             this.Container = await this.Database.CreateContainerIfNotExistsAsync(this.ContainerId, this.PartitionKey);
         }
@@ -63,6 +66,40 @@ namespace CosmosDbExperiments.Cosmos
                 Console.WriteLine(e.Message);
             }
             return 0;
+        }
+
+        public async Task<double> ReadItemWithGivenPartitionKeyAndId<T>(string pk, string id)
+        {
+            var response = await this.Container.ReadItemAsync<T>(id, new PartitionKey(pk));
+
+            return response.RequestCharge;
+        }
+
+        public async Task<double> QueryItemsWithGivenPartitionKey<T>(string pk, string queryText)
+        {
+            //reading only first 10 records
+            var iterator = this.Container.GetItemQueryIterator<T>(
+                      queryText: queryText,
+                      requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(pk),
+                                                                MaxItemCount = 10 }
+                    );
+            var response = await iterator.ReadNextAsync();
+            Console.WriteLine($"Queried container {this.ContainerId} with partition key {pk}, {response.Count} returned.");
+            return response.RequestCharge;
+        }
+
+        public async Task<double> QueryItemsWithoutPartitionKey<T>(string queryText)
+        {
+            var iterator = this.Container.GetItemQueryIterator<T>(
+                      queryText: queryText,
+                      requestOptions: new QueryRequestOptions
+                      {
+                          MaxItemCount = 10
+                      }
+                    );
+            var response = await iterator.ReadNextAsync();
+
+            return response.RequestCharge;
         }
 
         public async Task DeleteDbAndCleanupAsync()

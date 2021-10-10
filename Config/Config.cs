@@ -2,7 +2,7 @@ namespace CosmosDbExperiments.Config
 {
     public class Config
     {
-        public CosmosContainerConfiguration NearestRegionSettings { get; set; }
-        public CosmosContainerConfiguration AwayRegionSettings { get; set; }
+        public CosmosContainerConfiguration CosmosAccountSettings { get; set; }
+        public int NumberOfRecordsForSimulation { get; set; }
     }
 }
