@@ -8,13 +8,15 @@ namespace CosmosDbExperiments
     {
         static async Task Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Console.WriteLine("**********Welcome to Cosmos*********");
             
             CosmosExperiments CosmosExperiments = new CosmosExperiments(GetConfiguration());
 
-            await CosmosExperiments.InitializeDatabasesWithDataAsync();
+            await CosmosExperiments.RunExperimentsAsync();
 
             Console.ReadLine();
+
+            await CosmosExperiments.CleanUpAsync();
         }
 
         static Config.Config GetConfiguration()

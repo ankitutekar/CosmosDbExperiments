@@ -22,7 +22,8 @@ namespace CosmosDbExperiments.Cosmos
                 SerializerOptions = new CosmosSerializationOptions()
                 {
                     PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase
-                }
+                },
+                ApplicationRegion = configuration.Region
             });
             this.DatabaseId = configuration.DatabaseId;
             this.ContainerId = configuration.ContainerId;
@@ -34,7 +35,7 @@ namespace CosmosDbExperiments.Cosmos
             return $"Cosmos client for Database: {DatabaseId}, Container: {ContainerId}";
         }
 
-        public async Task InitializeDatabaseAsync()
+        public async Task EnsureDatabaseAsync()
         {
             this.Database = await this.Client.CreateDatabaseIfNotExistsAsync(this.DatabaseId);
         }
@@ -102,10 +103,14 @@ namespace CosmosDbExperiments.Cosmos
             return response.RequestCharge;
         }
 
-        public async Task DeleteDbAndCleanupAsync()
+        public async Task CleanupContainerAsync()
         {
-            await this.Database.DeleteAsync();
+            await this.Container.DeleteContainerAsync();
+        }
 
+        public async Task CleanupAsync()
+        {
+            await CleanupContainerAsync();
             this.Client.Dispose();
         }
     }

@@ -4,5 +4,6 @@ namespace CosmosDbExperiments.Config
     {
         public CosmosContainerConfiguration CosmosAccountSettings { get; set; }
         public int NumberOfRecordsForSimulation { get; set; }
+        public int NumberOfIterations { get; set; }
     }
 }

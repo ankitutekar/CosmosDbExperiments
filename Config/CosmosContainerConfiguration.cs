@@ -2,6 +2,7 @@ namespace CosmosDbExperiments.Config
 {
     public class CosmosContainerConfiguration
     {
+        public string Region { get; set; }
         public string Endpoint { get; set; }
         public string PrimaryKey { get; set; }
         public string DatabaseId { get; set; }
