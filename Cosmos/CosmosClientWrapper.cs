@@ -55,7 +55,7 @@ namespace CosmosDbExperiments.Cosmos
             this.Container = await this.Database.CreateContainerIfNotExistsAsync(this.ContainerId, this.PartitionKey);
         }
 
-        public async Task<double> InsertRecordIntoContainer<T>(T record, string pk)
+        public async Task<double> InsertRecordIntoContainerAsync<T>(T record, string pk)
         {
             try
             {
@@ -69,14 +69,50 @@ namespace CosmosDbExperiments.Cosmos
             return 0;
         }
 
-        public async Task<double> ReadItemWithGivenPartitionKeyAndId<T>(string pk, string id)
+        public async Task<double> ReplaceRecordInContainerAsync<T>(T record, string id)
+        {
+            try
+            {
+                var response = await this.Container.ReplaceItemAsync<T>(record, id);
+                return response.RequestCharge;
+            }
+            catch (CosmosException e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            return 0;
+        }
+
+        public async Task<double> ReadItemAndReturnRUsAsync<T>(string pk, string id)
         {
             var response = await this.Container.ReadItemAsync<T>(id, new PartitionKey(pk));
 
             return response.RequestCharge;
         }
 
-        public async Task<double> QueryItemsWithGivenPartitionKey<T>(string pk, string queryText)
+        public async Task<T> ReadItemWithGivenPartitionKeyAndIdAsync<T>(string pk, string id)
+        {
+            try
+            {
+                var response = await this.Container.ReadItemAsync<T>(id, new PartitionKey(pk));
+
+                return response.Resource;
+            }
+            catch (CosmosException cs)
+            {
+                if (cs.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    Console.WriteLine($"Given item doesn't exist!!");
+                }
+                else
+                {
+                    Console.WriteLine($"{cs.Message}");
+                }
+                return default(T);
+            }
+        }
+
+        public async Task<double> QueryItemsWithGivenPartitionKeyAsync<T>(string pk, string queryText)
         {
             //reading only first 10 records
             var iterator = this.Container.GetItemQueryIterator<T>(
@@ -89,7 +125,7 @@ namespace CosmosDbExperiments.Cosmos
             return response.RequestCharge;
         }
 
-        public async Task<double> QueryItemsWithoutPartitionKey<T>(string queryText)
+        public async Task<double> QueryItemsWithoutPartitionKeyAsync<T>(string queryText)
         {
             var iterator = this.Container.GetItemQueryIterator<T>(
                       queryText: queryText,
@@ -105,13 +141,28 @@ namespace CosmosDbExperiments.Cosmos
 
         public async Task CleanupContainerAsync()
         {
-            await this.Container.DeleteContainerAsync();
+            await this.Container?.DeleteContainerAsync();
         }
 
         public async Task CleanupAsync()
         {
-            await CleanupContainerAsync();
-            this.Client.Dispose();
+            try
+            {
+                await CleanupContainerAsync();
+            }
+            catch(CosmosException cs)
+            {
+                if(cs.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    Console.WriteLine($"Container already cleaned up!");
+                }
+                else
+                {
+                    Console.WriteLine($"{cs.Message}");
+                }
+            }
+
+            this.Client?.Dispose();
         }
     }
 }

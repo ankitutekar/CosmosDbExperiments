@@ -8,15 +8,24 @@ namespace CosmosDbExperiments
     {
         static async Task Main(string[] args)
         {
-            Console.WriteLine("**********Welcome to Cosmos*********");
+            Console.WriteLine("\n\n**********Welcome to Cosmos*********");
             
             CosmosExperiments CosmosExperiments = new CosmosExperiments(GetConfiguration());
 
-            await CosmosExperiments.RunExperimentsAsync();
-
+            try
+            {
+                await CosmosExperiments.RunExperimentsAsync();
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            finally
+            {
+                await CosmosExperiments.CleanUpAsync();
+            }
+            Console.WriteLine($"\n\nPress any key to continue...");
             Console.ReadLine();
-
-            await CosmosExperiments.CleanUpAsync();
         }
 
         static Config.Config GetConfiguration()
